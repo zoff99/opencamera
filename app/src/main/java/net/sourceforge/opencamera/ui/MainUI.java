@@ -1305,6 +1305,16 @@ public class MainUI {
         return sharedPreferences.getBoolean(PreferenceKeys.ShowFaceDetectionPreferenceKey, false);
     }
 
+    public void hidebuttons() {
+        final int visibility = View.GONE;
+        View exposureButton = main_activity.findViewById(R.id.exposure);
+        exposureButton.setVisibility(visibility);
+        View settingsButton = main_activity.findViewById(R.id.settings);
+        settingsButton.setVisibility(visibility);
+        View galleryButton = main_activity.findViewById(R.id.gallery);
+        galleryButton.setVisibility(visibility);
+    }
+
     public void setImmersiveMode(final boolean immersive_mode) {
         if( MyDebug.LOG )
             Log.d(TAG, "setImmersiveMode: " + immersive_mode);
@@ -1440,8 +1450,8 @@ public class MainUI {
         main_activity.runOnUiThread(new Runnable() {
             public void run() {
                 final boolean is_panorama_recording = main_activity.getApplicationInterface().getGyroSensor().isRecording();
-                final int visibility = is_panorama_recording ? View.GONE : (show_gui_photo && show_gui_video) ? View.VISIBLE : View.GONE; // for UI that is hidden while taking photo or video
-                final int visibility_video = is_panorama_recording ? View.GONE : show_gui_photo ? View.VISIBLE : View.GONE; // for UI that is only hidden while taking photo
+                final int visibility = View.GONE; // is_panorama_recording ? View.GONE : (show_gui_photo && show_gui_video) ? View.VISIBLE : View.GONE; // for UI that is hidden while taking photo or video
+                final int visibility_video = View.GONE; // is_panorama_recording ? View.GONE : show_gui_photo ? View.VISIBLE : View.GONE; // for UI that is only hidden while taking photo
                 View switchCameraButton = main_activity.findViewById(R.id.switch_camera);
                 View switchMultiCameraButton = main_activity.findViewById(R.id.switch_multi_camera);
                 View switchVideoButton = main_activity.findViewById(R.id.switch_video);
@@ -1503,6 +1513,7 @@ public class MainUI {
                 if( show_gui_photo && show_gui_video ) {
                     layoutUI(); // needed for "top" UIPlacement, to auto-arrange the buttons
                 }
+                hidebuttons();
             }
         });
     }

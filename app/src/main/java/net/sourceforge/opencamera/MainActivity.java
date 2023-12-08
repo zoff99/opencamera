@@ -5411,6 +5411,7 @@ public class MainActivity extends AppCompatActivity {
         //exposureButton.setVisibility(supportsExposureButton() && !mainUI.inImmersiveMode() ? View.VISIBLE : View.GONE);
         if( supportsExposureButton() && !mainUI.inImmersiveMode() )
             exposureButton.setVisibility(View.VISIBLE);
+        exposureButton.setVisibility(View.GONE);
 
         // needed as availability of some icons is per-camera (e.g., flash, RAW)
         // for making icons visible, this is done elsewhere in call to MainUI.showGUI()
