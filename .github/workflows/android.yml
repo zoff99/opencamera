@@ -1,0 +1,94 @@
+name: Android CI
+on:
+  push:
+    paths-ignore:
+     - 'README.md'
+  pull_request:
+    paths-ignore:
+     - 'README.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: dummy
+        default: dummy
+
+jobs:
+  update-nightly-tag:
+    name: Update nightly release tag
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/simpleui'
+    permissions:
+        contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Move nightly tag to head for nightly release
+        run: git tag -f nightly && git push origin nightly -f
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+
+    - name: Install system packages
+      run: |
+          sudo apt-get update && \
+          sudo DEBIAN_FRONTEND=noninteractive \
+          apt-get install -y --no-install-recommends \
+          libncurses5 \
+          zipalign \
+          apksigner
+
+    - name: Build with Gradle
+      run: pwd;./gradlew assembleRelease ; find . -name '*.apk'
+
+    - name: generate debug key
+      run: keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname CN=appauth
+
+    - name: align and sign apk
+      run: |
+        pwd
+        cd /home/runner/work/opencamera/opencamera/app/build/outputs/apk/release/
+        pwd
+        ls -al
+        ls -hal
+        zipalign -p 4 app-release-unsigned.apk app-release-unsigned-aligned.apk
+        apksigner sign --ks /home/runner/work/opencamera/opencamera/debug.keystore --ks-pass "pass:android" --ks-key-alias androiddebugkey --out app-release.apk --verbose app-release-unsigned-aligned.apk
+
+    - name: upload apk
+      uses: actions/upload-artifact@v3
+      with:
+        name: simplecamera
+        path: /home/runner/work/opencamera/opencamera/app/build/outputs/apk/release/app-release.apk
+
+    - name: Rename artifact for nightly upload
+      if: github.event_name == 'push' && github.ref == 'refs/heads/simpleui'
+      run: |
+        pwd
+        cp -av /home/runner/work/opencamera/opencamera/app/build/outputs/apk/release/app-release.apk simplecamera-nightly.apk
+    - name: Upload to nightly release
+      uses: ncipollo/release-action@v1
+      if: github.event_name == 'push' && github.ref == 'refs/heads/simpleui'
+      with:
+        allowUpdates: true
+        tag: nightly
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "simplecamera-nightly.apk"
+
+
+  gradle-wrapper-validation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: gradle/wrapper-validation-action@v1.0.6
+
