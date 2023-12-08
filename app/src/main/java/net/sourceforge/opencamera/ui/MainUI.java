@@ -1309,8 +1309,8 @@ public class MainUI {
         final int visibility = View.GONE;
         View exposureButton = main_activity.findViewById(R.id.exposure);
         exposureButton.setVisibility(visibility);
-        View settingsButton = main_activity.findViewById(R.id.settings);
-        settingsButton.setVisibility(visibility);
+        // View settingsButton = main_activity.findViewById(R.id.settings);
+        // settingsButton.setVisibility(visibility);
         View galleryButton = main_activity.findViewById(R.id.gallery);
         galleryButton.setVisibility(visibility);
     }
